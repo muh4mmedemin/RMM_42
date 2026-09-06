@@ -4,11 +4,12 @@
 #include "stdlib.h"
 
 typedef struct	hardware_static_info_s {
-	char				pc_name[128];
-	char				motherboard_name[128];
-	char				motherboard_label[128];
-	char				ram_name[128];
-	char				storage_name[128];
+	char				pc_name[128]; //Done
+	char				motherboard_name[128]; //Done
+	char				motherboard_label[128]; //Done
+	//char				ram_name[128];
+	char				storage_name[128]; 
+	unsigned long long	storage_max_value_mb;
 	char				cpu_label_name[128];
 	char				os_version[128];
 	int					is_64bit;
