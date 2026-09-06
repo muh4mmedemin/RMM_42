@@ -1,13 +1,26 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#define MAX_DISK_COUNT 44
 #include "stdlib.h"
 
-typedef struct	hardware_static_info_s {
+typedef struct	disk_info_s{
+	char	disk_name[128];
+	char	disk_vendor[128];
+	int		is_ssd;		// 1 = SSD | 0 = HDD
+} disk_info_t;
+
+typedef	struct	disk_list_s{
+	disk_info_t disk_info[MAX_DISK_COUNT];
+	int	disk_count; // Gerçekte kaç disk bulundu
+} disk_list_t;
+
+typedef struct	hardware_static_info_s{
 	char				pc_name[128]; //Done
 	char				motherboard_name[128]; //Done
 	char				motherboard_label[128]; //Done
 	//char				ram_name[128];
+	disk_list_t			storage_info;
 	char				storage_name[128]; 
 	unsigned long long	storage_max_value_mb;
 	char				cpu_label_name[128];
