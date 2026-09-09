@@ -97,24 +97,64 @@ void get_storage_static_info(disk_list_t *source)
 			break ;
 		disk_info_structer = (PSTORAGE_DEVICE_DESCRIPTOR)disk_info;
 		strncpy((*source).disk_info[i].disk_name, (disk_info + disk_info_structer->ProductIdOffset), sizeof((*source).disk_info[i].disk_name) - 1);
+		strncpy((*source).disk_info[i].disk_vendor, (disk_info + disk_info_structer->VendorIdOffset), sizeof((*source).disk_info[i].disk_vendor) - 1);
 		(*source).disk_info->disk_name[sizeof((*source).disk_info->disk_name) - 1] = '\0';
 		(*source).disk_count = i;
 		CloseHandle(key);		
 		i++;
 	}
-	
+}
+
+void test_func(device_info_t device_info)
+{
+	int i;
+
+	i = 0;
+	printf("%s\n", device_info.hardware_info.static_info.pc_name);
+	printf("%s\n", device_info.hardware_info.static_info.motherboard_label);
+	printf("%s\n", device_info.hardware_info.static_info.motherboard_name);
+	while(i <= device_info.hardware_info.static_info.storage_info.disk_count)
+	{
+		printf("Disk%d : %s\n", i, device_info.hardware_info.static_info.storage_info.disk_info[i].disk_name);
+		i++;
+	}
 }
 
 int main( void )
 {
 	device_info_t device_info;
+	char path[36];
 	get_pc_name(&device_info);
 	get_mother_board_static_value(&device_info);
 	get_storage_static_info(&device_info.hardware_info.static_info.storage_info);
-	printf("%s\n", device_info.hardware_info.static_info.pc_name);
-	printf("%s\n", device_info.hardware_info.static_info.motherboard_label);
-	printf("%s\n", device_info.hardware_info.static_info.motherboard_name);
-	printf("%s\n", device_info.hardware_info.static_info.storage_info.disk_info[3].disk_name);
+	test_func(device_info);
+	DWORD test = GetLogicalDrives();
+	int i = 0;
+	int pozition = 0;
+	while(pozition <= 25)
+	{
+		if (test & i)
+		{
+			sprintf(path, "%c:\\", ('A' + (pozition - 1)));
+			printf("VOLUME : %s\n", path);
+			ZeroMemory(path, sizeof(path));
+		}
+		if (i == 0)
+			i++;
+		else
+			i += i;
+		pozition++;
+	}
+	char a[6] = "C:\\";
+	unsigned long long total_space_volume;
+	unsigned long long used_space_volume;
+	
+	DISK_SPACE_INFORMATION volume_struct;
+	ZeroMemory(&volume_struct, sizeof(volume_struct));
+	GetDiskSpaceInformationA(a, &volume_struct);
+	total_space_volume = ((unsigned long long)volume_struct.SectorsPerAllocationUnit * volume_struct.BytesPerSector * volume_struct.ActualTotalAllocationUnits) / (1024ULL * 1024ULL * 1024ULL);
+	used_space_volume = ((unsigned long long)volume_struct.SectorsPerAllocationUnit * volume_struct.BytesPerSector * volume_struct.UsedAllocationUnits) / (1024ULL * 1024ULL * 1024ULL);
+	printf("DWORD KEY : %d\n TOTAL SPACE IN %s  : %llu \n USED SPACE IN %s : %llu\n EMPTY SPACE IN %s : %llu", test, a, total_space_volume, a, used_space_volume, a, (total_space_volume - used_space_volume));
 	//DeviceIoControl(test, fdwCreate, )
 	;
     // Get the list of process identifiers.
