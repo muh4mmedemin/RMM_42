@@ -1,7 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.h                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: muayna <muayna@student.42istanbul.com.t    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/13 10:14:36 by muayna            #+#    #+#             */
+/*   Updated: 2026/09/13 10:14:36 by muayna           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef MAIN_H
 #define MAIN_H
 
 #define MAX_DISK_COUNT 44
+#define MAX_VOLUME_COUNT 26
 #include "stdlib.h"
 
 typedef struct	disk_info_s{
@@ -15,12 +28,25 @@ typedef	struct	disk_list_s{
 	int	disk_count; // Gerçekte kaç disk bulundu
 } disk_list_t;
 
+typedef struct volume_info_s{
+	char	volume_letter[5];
+	unsigned long long	total_mb;
+	unsigned long long	used_mb;
+	unsigned long long	free_mb;
+} volume_info_t;
+
+typedef struct volume_list_s{
+	volume_info_t volumes[MAX_VOLUME_COUNT];
+	int volume_count;
+} volume_list_t;
+
 typedef struct	hardware_static_info_s{
 	char				pc_name[128]; //Done
 	char				motherboard_name[128]; //Done
 	char				motherboard_label[128]; //Done
 	//char				ram_name[128];
 	disk_list_t			storage_info; // Done
+	volume_list_t		volume_info; // Done
 	unsigned long long	storage_max_value_mb;
 	char				cpu_label_name[128];
 	char				os_version[128];
