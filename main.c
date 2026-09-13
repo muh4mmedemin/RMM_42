@@ -50,19 +50,20 @@ void get_mother_board_static_value(device_info_t *source)
 
 void get_storage_static_info(disk_list_t *source)
 {
-	int		i;
-	char	disk_name[64];
-	char	disk_info[600];
-	HANDLE key;
-	DWORD storage_info_size;
-	DWORD returned_bytes;
-	STORAGE_PROPERTY_QUERY storage_init;
-	PSTORAGE_DEVICE_DESCRIPTOR disk_info_structer;
+	int							i;
+	char						disk_name[64];
+	char						disk_info[600];
+	char						disk_storage_info[600];
 
-	storage_info_size = sizeof(disk_info);
-	ZeroMemory(&storage_init, sizeof(storage_init));
-	storage_init.PropertyId = StorageDeviceProperty;
-	storage_init.QueryType = PropertyStandardQuery;
+	HANDLE						key;
+	DWORD 						returned_bytes;
+	STORAGE_PROPERTY_QUERY		disk_info_init;
+	PSTORAGE_DEVICE_DESCRIPTOR	disk_info_structer;
+	PGET_LENGTH_INFORMATION		disk_storage_structer;
+
+	ZeroMemory(&disk_info_init, sizeof(disk_info_init));
+	disk_info_init.PropertyId = StorageDeviceProperty;
+	disk_info_init.QueryType = PropertyStandardQuery;
 	i = 0;
 	(*source).disk_count = i;
 	while(i < MAX_DISK_COUNT)
@@ -71,15 +72,19 @@ void get_storage_static_info(disk_list_t *source)
 		key = CreateFileA(disk_name, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (key == INVALID_HANDLE_VALUE)
 			break;
-		if (DeviceIoControl(key, IOCTL_STORAGE_QUERY_PROPERTY, &storage_init, sizeof(storage_init), disk_info, storage_info_size, &returned_bytes, NULL) == FALSE)
+		if (DeviceIoControl(key, IOCTL_STORAGE_QUERY_PROPERTY, &disk_info_init, sizeof(disk_info_init), disk_info, (DWORD)sizeof(disk_info), &returned_bytes, NULL) == FALSE)
 			break ;
+		if (DeviceIoControl(key, IOCTL_DISK_GET_LENGTH_INFO, NULL, 0, disk_storage_info, (DWORD)sizeof(disk_storage_info), NULL, NULL) == FALSE)
+			break ;
+		disk_storage_structer = (PGET_LENGTH_INFORMATION)disk_storage_info;
 		disk_info_structer = (PSTORAGE_DEVICE_DESCRIPTOR)disk_info;
 		strncpy((*source).disk_info[i].disk_name, (disk_info + disk_info_structer->ProductIdOffset), sizeof((*source).disk_info[i].disk_name) - 1);
 		strncpy((*source).disk_info[i].disk_vendor, (disk_info + disk_info_structer->VendorIdOffset), sizeof((*source).disk_info[i].disk_vendor) - 1);
-		(*source).disk_info->disk_name[sizeof((*source).disk_info->disk_name) - 1] = '\0';
-		CloseHandle(key);		
+		(*source).disk_info[i].total_mb = (unsigned long long)(disk_storage_structer->Length.QuadPart / (unsigned long long)(1024ULL * 1024ULL));
+		(*source).disk_info[i].disk_name[sizeof((*source).disk_info->disk_name) - 1] = '\0';	
 		i++;
 		(*source).disk_count = i;
+		CloseHandle(key);
 	}
 }
 
@@ -143,7 +148,7 @@ void test_func(device_info_t device_info)
 	printf("%s\n", device_info.hardware_info.static_info.motherboard_name);
 	while(i < device_info.hardware_info.static_info.storage_info.disk_count)
 	{
-		printf("Disk%d : %s\n", i, device_info.hardware_info.static_info.storage_info.disk_info[i].disk_name);
+		printf("Disk%d : %s MAX CAPACITY MB : %llu\n", i, device_info.hardware_info.static_info.storage_info.disk_info[i].disk_name, device_info.hardware_info.static_info.storage_info.disk_info[i].total_mb);
 		i++;
 	}
 	i = 0;

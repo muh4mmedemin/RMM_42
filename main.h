@@ -18,9 +18,10 @@
 #include "stdlib.h"
 
 typedef struct	disk_info_s{
-	char	disk_name[128];
-	char	disk_vendor[128];
+	char	disk_name[128]; // Done
+	char	disk_vendor[128]; // Done
 	int		is_ssd;		// 1 = SSD | 0 = HDD
+	unsigned long long	total_mb; // Done
 } disk_info_t;
 
 typedef	struct	disk_list_s{
@@ -47,12 +48,10 @@ typedef struct	hardware_static_info_s{
 	//char				ram_name[128];
 	disk_list_t			storage_info; // Done
 	volume_list_t		volume_info; // Done
-	unsigned long long	storage_max_value_mb;
 	char				cpu_label_name[128];
 	char				os_version[128];
 	int					is_64bit;
 	unsigned long long	memory_capacity_max_mb;
-	unsigned long long	storage_capacity_max_mb;
 } hardware_static_info_t;
 
 typedef struct hardware_dynamic_info_s {
