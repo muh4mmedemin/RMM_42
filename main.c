@@ -138,6 +138,41 @@ void get_volume_space(device_info_t *source)
 	}
 }
 
+static unsigned int find_volume_index(char letter)
+{
+    return 1 << (letter - 'A');
+}
+
+void get_disk_partitioned_space(device_info_t *source)
+{
+	HANDLE key;
+	PVOLUME_DISK_EXTENTS volume_info;
+	char	info[600];
+	char	path[7];
+	DWORD	returned_bytes;
+	int i;
+	int volume_index;
+
+	volume_index = 1;
+	i = 0;
+	while(i < (*source).hardware_info.static_info.volume_info.volume_count)
+	{
+		sprintf(path, "\\\\.\\%c:", (*source).hardware_info.static_info.volume_info.volumes[i].volume_letter[0]);
+		key = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (key == INVALID_HANDLE_VALUE)
+			break ;
+		if (DeviceIoControl(key, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, info, (DWORD)sizeof(info), &returned_bytes, NULL) == FALSE)
+			break ;
+		volume_info = (PVOLUME_DISK_EXTENTS)info;
+		(*source).hardware_info.static_info.storage_info.disk_info[volume_info->Extents->DiskNumber].total_volume_capacity_mb += (*source).hardware_info.static_info.volume_info.volumes[i].total_mb;
+		(*source).hardware_info.static_info.storage_info.disk_info[volume_info->Extents->DiskNumber].volume_bitmap_list |= find_volume_index((*source).hardware_info.static_info.volume_info.volumes[i].volume_letter[0]);
+		(*source).hardware_info.static_info.storage_info.disk_info[volume_info->Extents->DiskNumber].used_volume_capacity_mb += (*source).hardware_info.static_info.volume_info.volumes[i].used_mb;
+		(*source).hardware_info.static_info.storage_info.disk_info[volume_info->Extents->DiskNumber].free_volume_capacity_mb += (*source).hardware_info.static_info.volume_info.volumes[i].free_mb;
+		volume_index += volume_index;
+		i++;
+	}
+}
+
 void test_func(device_info_t device_info)
 {
 	int i;
@@ -149,6 +184,10 @@ void test_func(device_info_t device_info)
 	while(i < device_info.hardware_info.static_info.storage_info.disk_count)
 	{
 		printf("Disk%d : %s MAX CAPACITY MB : %llu\n", i, device_info.hardware_info.static_info.storage_info.disk_info[i].disk_name, device_info.hardware_info.static_info.storage_info.disk_info[i].total_mb);
+		printf("Disk%d : TOTAL_VOLUMED_CAPACITY : %llu\n", i, device_info.hardware_info.static_info.storage_info.disk_info[i].total_volume_capacity_mb);
+		printf("Disk%d : USED_VOLUMED_CAPACITY : %llu\n", i, device_info.hardware_info.static_info.storage_info.disk_info[i].used_volume_capacity_mb);
+		printf("Disk%d : FREE_VOLUMED_CAPACITY : %llu\n", i, device_info.hardware_info.static_info.storage_info.disk_info[i].free_volume_capacity_mb);
+		printf("Disk%d %lu \n", i, device_info.hardware_info.static_info.storage_info.disk_info[i].volume_bitmap_list);
 		i++;
 	}
 	i = 0;
@@ -164,11 +203,13 @@ int main( void )
 	device_info_t device_info;
 	char path[36];
 	get_pc_name(&device_info);
+	get_volume_names(&device_info);
 	get_mother_board_static_value(&device_info);
 	get_storage_static_info(&device_info.hardware_info.static_info.storage_info);
-	get_volume_names(&device_info);
 	get_volume_space(&device_info);
+	get_disk_partitioned_space(&device_info);
 	test_func(device_info);
+
 	//DeviceIoControl(test, fdwCreate, )
 	;
     // Get the list of process identifiers.

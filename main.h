@@ -22,6 +22,10 @@ typedef struct	disk_info_s{
 	char	disk_vendor[128]; // Done
 	int		is_ssd;		// 1 = SSD | 0 = HDD
 	unsigned long long	total_mb; // Done
+	unsigned long long	total_volume_capacity_mb; // Done
+	unsigned long long	used_volume_capacity_mb; // Done
+	unsigned long long	free_volume_capacity_mb; // Done
+	unsigned long		volume_bitmap_list; // Done : :  https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getlogicaldrives it's same
 } disk_info_t;
 
 typedef	struct	disk_list_s{
