@@ -26,6 +26,39 @@
 // To ensure correct resolution of symbols, add Psapi.lib to TARGETLIBS
 // and compile with -DPSAPI_VERSION=1
 
+void get_os_name(device_info_t *source)
+{
+	OSVERSIONINFOEXA os_info_st;
+	DWORD product_type;
+	ZeroMemory(&os_info_st, sizeof(os_info_st));
+	os_info_st.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXA);
+	GetVersionExA((LPOSVERSIONINFO)&os_info_st);
+	GetProductInfo(os_info_st.dwMajorVersion, os_info_st.dwMinorVersion, 0, 0, &product_type);
+
+	if (os_info_st.dwMajorVersion == 10 && os_info_st.dwMinorVersion == 0) {
+	{
+		if(os_info_st.dwBuildNumber >= 22000)
+			strcpy((*source).hardware_info.static_info.os_name, "Windows 11");
+		else
+			strcpy((*source).hardware_info.static_info.os_name, "Windows 10");
+	}
+	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 3) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows 8.1");
+	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 2) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows 8");
+	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 1) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows 7");
+	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 0) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows Vista");
+	} else if (os_info_st.dwMajorVersion == 5 && os_info_st.dwMinorVersion == 2) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows XP x64 / Server 2003");
+	} else if (os_info_st.dwMajorVersion == 5 && os_info_st.dwMinorVersion == 1) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows XP");
+	} else {
+		strcpy((*source).hardware_info.static_info.os_name, "Bilinmeyen Windows");
+	}
+}
+
 void get_cpu_name(device_info_t *source)
 {
 	char	name[128];
@@ -187,6 +220,25 @@ void get_disk_partitioned_space(device_info_t *source)
 	}
 }
 
+void get_cpu_arch(device_info_t *source)
+{
+	SYSTEM_INFO  system_st;
+	GetNativeSystemInfo(&system_st);
+	if (system_st.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
+		(*source).hardware_info.static_info.is_64bit = 1;
+	else if (system_st.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_UNKNOWN)
+		(*source).hardware_info.static_info.is_64bit = -1;
+	else
+		(*source).hardware_info.static_info.is_64bit = 0;
+}
+void get_total_memory_mb(device_info_t *source)
+{
+	MEMORYSTATUSEX memory_info; 
+	memory_info.dwLength = sizeof(MEMORYSTATUSEX);
+	GlobalMemoryStatusEx(&memory_info);
+	(*source).hardware_info.static_info.memory_capacity_max_mb = (memory_info.ullTotalPhys / (1024ULL * 1204ULL));
+}
+
 void test_func(device_info_t device_info)
 {
 	int i;
@@ -197,6 +249,8 @@ void test_func(device_info_t device_info)
 	printf("%s\n", device_info.hardware_info.static_info.motherboard_label);
 	printf("%s\n", device_info.hardware_info.static_info.motherboard_name);
 	printf("%s\n", device_info.hardware_info.static_info.os_name);
+	printf("TOTAL MEMORY : %llu\n", device_info.hardware_info.static_info.memory_capacity_max_mb);
+	printf("OS ARCH is 64 : %d\n", device_info.hardware_info.static_info.is_64bit);
 	while(i < device_info.hardware_info.static_info.storage_info.disk_count)
 	{
 		printf("Disk%d : %s MAX CAPACITY MB : %llu\n", i, device_info.hardware_info.static_info.storage_info.disk_info[i].disk_name, device_info.hardware_info.static_info.storage_info.disk_info[i].total_mb);
@@ -214,44 +268,15 @@ void test_func(device_info_t device_info)
 	}
 }
 
-void get_os_name(device_info_t *source)
-{
-	OSVERSIONINFOEXA os_info_st;
-	DWORD product_type;
-	ZeroMemory(&os_info_st, sizeof(os_info_st));
-	os_info_st.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXA);
-	GetVersionExA((LPOSVERSIONINFO)&os_info_st);
-	GetProductInfo(os_info_st.dwMajorVersion, os_info_st.dwMinorVersion, 0, 0, &product_type);
-
-	if (os_info_st.dwMajorVersion == 10 && os_info_st.dwMinorVersion == 0) {
-	{
-		if(os_info_st.dwBuildNumber >= 22000)
-			strcpy((*source).hardware_info.static_info.os_name, "Windows 11");
-		else
-			strcpy((*source).hardware_info.static_info.os_name, "Windows 10");
-	}
-	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 3) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows 8.1");
-	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 2) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows 8");
-	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 1) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows 7");
-	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 0) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows Vista");
-	} else if (os_info_st.dwMajorVersion == 5 && os_info_st.dwMinorVersion == 2) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows XP x64 / Server 2003");
-	} else if (os_info_st.dwMajorVersion == 5 && os_info_st.dwMinorVersion == 1) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows XP");
-	} else {
-		strcpy((*source).hardware_info.static_info.os_name, "Bilinmeyen Windows");
-	}
-}
-
 int main( void )
 {
 	device_info_t device_info;
 	char path[36];
 	get_pc_name(&device_info);
+	MEMORYSTATUSEX test; 
+	test.dwLength = sizeof(MEMORYSTATUSEX);
+	GlobalMemoryStatusEx(&test);
+	printf("%llu\n", (test.ullTotalPhys / (1024ULL * 1024ULL)));
 	get_cpu_name(&device_info);
 	get_volume_names(&device_info);
 	get_mother_board_static_value(&device_info);
@@ -259,6 +284,8 @@ int main( void )
 	get_volume_space(&device_info);
 	get_disk_partitioned_space(&device_info);
 	get_os_name(&device_info);
+	get_cpu_arch(&device_info);
+	get_total_memory_mb(&device_info);
 	test_func(device_info);
 
 	//DeviceIoControl(test, fdwCreate, )
