@@ -26,6 +26,20 @@
 // To ensure correct resolution of symbols, add Psapi.lib to TARGETLIBS
 // and compile with -DPSAPI_VERSION=1
 
+void get_cpu_name(device_info_t *source)
+{
+	char	name[128];
+	HKEY	key;
+	DWORD	buffer_size;
+
+	buffer_size = sizeof(name);
+
+	RegOpenKeyExA(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", 0, KEY_READ, &key);
+	RegQueryValueExA(key, "ProcessorNameString", NULL, NULL, (LPBYTE)name, &buffer_size);
+	strncpy((*source).hardware_info.static_info.cpu_label_name, name, ((sizeof(name)) - 2));
+	RegCloseKey(key);
+}
+
 void get_pc_name(device_info_t *source)
 {
 	char	name[128];
@@ -115,7 +129,6 @@ void get_volume_names(device_info_t *source)
 void get_volume_space(device_info_t *source)
 {
 	DISK_SPACE_INFORMATION volume_struct;
-	HRESULT test;
 	unsigned long long total_space_volume;
 	unsigned long long used_space_volume;
 	int i;
@@ -170,6 +183,7 @@ void get_disk_partitioned_space(device_info_t *source)
 		(*source).hardware_info.static_info.storage_info.disk_info[volume_info->Extents->DiskNumber].free_volume_capacity_mb += (*source).hardware_info.static_info.volume_info.volumes[i].free_mb;
 		volume_index += volume_index;
 		i++;
+		CloseHandle(key);
 	}
 }
 
@@ -179,8 +193,10 @@ void test_func(device_info_t device_info)
 
 	i = 0;
 	printf("%s\n", device_info.hardware_info.static_info.pc_name);
+	printf("%s\n", device_info.hardware_info.static_info.cpu_label_name);
 	printf("%s\n", device_info.hardware_info.static_info.motherboard_label);
 	printf("%s\n", device_info.hardware_info.static_info.motherboard_name);
+	printf("%s\n", device_info.hardware_info.static_info.os_name);
 	while(i < device_info.hardware_info.static_info.storage_info.disk_count)
 	{
 		printf("Disk%d : %s MAX CAPACITY MB : %llu\n", i, device_info.hardware_info.static_info.storage_info.disk_info[i].disk_name, device_info.hardware_info.static_info.storage_info.disk_info[i].total_mb);
@@ -198,16 +214,51 @@ void test_func(device_info_t device_info)
 	}
 }
 
+void get_os_name(device_info_t *source)
+{
+	OSVERSIONINFOEXA os_info_st;
+	DWORD product_type;
+	ZeroMemory(&os_info_st, sizeof(os_info_st));
+	os_info_st.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXA);
+	GetVersionExA((LPOSVERSIONINFO)&os_info_st);
+	GetProductInfo(os_info_st.dwMajorVersion, os_info_st.dwMinorVersion, 0, 0, &product_type);
+
+	if (os_info_st.dwMajorVersion == 10 && os_info_st.dwMinorVersion == 0) {
+	{
+		if(os_info_st.dwBuildNumber >= 22000)
+			strcpy((*source).hardware_info.static_info.os_name, "Windows 11");
+		else
+			strcpy((*source).hardware_info.static_info.os_name, "Windows 10");
+	}
+	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 3) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows 8.1");
+	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 2) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows 8");
+	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 1) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows 7");
+	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 0) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows Vista");
+	} else if (os_info_st.dwMajorVersion == 5 && os_info_st.dwMinorVersion == 2) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows XP x64 / Server 2003");
+	} else if (os_info_st.dwMajorVersion == 5 && os_info_st.dwMinorVersion == 1) {
+		strcpy((*source).hardware_info.static_info.os_name, "Windows XP");
+	} else {
+		strcpy((*source).hardware_info.static_info.os_name, "Bilinmeyen Windows");
+	}
+}
+
 int main( void )
 {
 	device_info_t device_info;
 	char path[36];
 	get_pc_name(&device_info);
+	get_cpu_name(&device_info);
 	get_volume_names(&device_info);
 	get_mother_board_static_value(&device_info);
 	get_storage_static_info(&device_info.hardware_info.static_info.storage_info);
 	get_volume_space(&device_info);
 	get_disk_partitioned_space(&device_info);
+	get_os_name(&device_info);
 	test_func(device_info);
 
 	//DeviceIoControl(test, fdwCreate, )

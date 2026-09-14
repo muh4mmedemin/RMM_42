@@ -52,8 +52,9 @@ typedef struct	hardware_static_info_s{
 	//char				ram_name[128];
 	disk_list_t			storage_info; // Done
 	volume_list_t		volume_info; // Done
-	char				cpu_label_name[128];
-	char				os_version[128];
+	char				cpu_label_name[128];//Done
+	unsigned int		os_build_version; //if Higher 20000 it's W11
+	char				os_name[128];
 	int					is_64bit;
 	unsigned long long	memory_capacity_max_mb;
 } hardware_static_info_t;
