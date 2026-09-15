@@ -35,28 +35,28 @@ void get_os_name(device_info_t *source)
 	GetVersionExA((LPOSVERSIONINFO)&os_info_st);
 	GetProductInfo(os_info_st.dwMajorVersion, os_info_st.dwMinorVersion, 0, 0, &product_type);
 
-	if (os_info_st.dwMajorVersion == 10 && os_info_st.dwMinorVersion == 0) {
+	if (os_info_st.dwMajorVersion == 10 && os_info_st.dwMinorVersion == 0) 
 	{
 		if(os_info_st.dwBuildNumber >= 22000)
-			strcpy((*source).hardware_info.static_info.os_name, "Windows 11");
+			strncpy((*source).hardware_info.static_info.os_name, "Windows 11", (sizeof((*source).hardware_info.static_info.os_name) - 1));
 		else
-			strcpy((*source).hardware_info.static_info.os_name, "Windows 10");
+			strncpy((*source).hardware_info.static_info.os_name, "Windows 10", (sizeof((*source).hardware_info.static_info.os_name) - 1));
 	}
-	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 3) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows 8.1");
-	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 2) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows 8");
-	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 1) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows 7");
-	} else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 0) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows Vista");
-	} else if (os_info_st.dwMajorVersion == 5 && os_info_st.dwMinorVersion == 2) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows XP x64 / Server 2003");
-	} else if (os_info_st.dwMajorVersion == 5 && os_info_st.dwMinorVersion == 1) {
-		strcpy((*source).hardware_info.static_info.os_name, "Windows XP");
-	} else {
-		strcpy((*source).hardware_info.static_info.os_name, "Bilinmeyen Windows");
-	}
+	else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 3) 
+		strncpy((*source).hardware_info.static_info.os_name, "Windows 8.1", (sizeof((*source).hardware_info.static_info.os_name) - 1));
+	else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 2) 
+		strncpy((*source).hardware_info.static_info.os_name, "Windows 8", (sizeof((*source).hardware_info.static_info.os_name) - 1));
+	else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 1) 
+		strncpy((*source).hardware_info.static_info.os_name, "Windows 7", (sizeof((*source).hardware_info.static_info.os_name) - 1));
+	 else if (os_info_st.dwMajorVersion == 6 && os_info_st.dwMinorVersion == 0) 
+		strncpy((*source).hardware_info.static_info.os_name, "Windows Vista", (sizeof((*source).hardware_info.static_info.os_name) - 1));
+	else if (os_info_st.dwMajorVersion == 5 && os_info_st.dwMinorVersion == 2) 
+		strncpy((*source).hardware_info.static_info.os_name, "Windows XP x64 / Server 2003", (sizeof((*source).hardware_info.static_info.os_name) - 1));
+	 else if (os_info_st.dwMajorVersion == 5 && os_info_st.dwMinorVersion == 1) 
+		strncpy((*source).hardware_info.static_info.os_name, "Windows XP", (sizeof((*source).hardware_info.static_info.os_name) - 1));
+	 else 
+		strncpy((*source).hardware_info.static_info.os_name, "Bilinmeyen Windows", (sizeof((*source).hardware_info.static_info.os_name) - 1));
+	(*source).hardware_info.static_info.os_name[(sizeof((*source).hardware_info.static_info.os_name) - 1)] = '\0';
 }
 
 void get_cpu_name(device_info_t *source)
@@ -69,7 +69,8 @@ void get_cpu_name(device_info_t *source)
 
 	RegOpenKeyExA(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", 0, KEY_READ, &key);
 	RegQueryValueExA(key, "ProcessorNameString", NULL, NULL, (LPBYTE)name, &buffer_size);
-	strncpy((*source).hardware_info.static_info.cpu_label_name, name, ((sizeof(name)) - 2));
+	strncpy((*source).hardware_info.static_info.cpu_label_name, name, ((sizeof((*source).hardware_info.static_info.cpu_label_name)) - 1));
+	(*source).hardware_info.static_info.cpu_label_name[(sizeof((*source).hardware_info.static_info.cpu_label_name) - 1)] = '\0';
 	RegCloseKey(key);
 }
 
@@ -77,8 +78,10 @@ void get_pc_name(device_info_t *source)
 {
 	char	name[128];
 	DWORD	name_size = 126;
-	GetComputerNameA(name, &name_size);
-	strcpy((*source).hardware_info.static_info.pc_name, name);
+	if(GetComputerNameA(name, &name_size) == FALSE)
+		return ;
+	strncpy((*source).hardware_info.static_info.pc_name, name, (sizeof((*source).hardware_info.static_info.pc_name) - 1));
+	(*source).hardware_info.static_info.pc_name[(sizeof((*source).hardware_info.static_info.pc_name) - 1)] = '\0';
 }
 
 void get_mother_board_static_value(device_info_t *source)
@@ -90,8 +93,10 @@ void get_mother_board_static_value(device_info_t *source)
 	RegOpenKeyExA(HKEY_LOCAL_MACHINE, "HARDWARE\\DESCRIPTION\\System\\BIOS", 0, KEY_READ, &key);
 	RegQueryValueExA(key, "BaseBoardManufacturer", NULL, NULL, (LPBYTE)label_name, &buffer_size);
 	RegQueryValueExA(key, "BaseBoardProduct", NULL, NULL, (LPBYTE)model_name, &buffer_size);
-	strcpy((*source).hardware_info.static_info.motherboard_label, label_name);
-	strcpy((*source).hardware_info.static_info.motherboard_name, model_name);
+	strncpy((*source).hardware_info.static_info.motherboard_label, label_name, (sizeof((*source).hardware_info.static_info.motherboard_label) - 1));
+	strncpy((*source).hardware_info.static_info.motherboard_name, model_name, (sizeof((*source).hardware_info.static_info.motherboard_name) - 1));
+	(*source).hardware_info.static_info.motherboard_name[(sizeof((*source).hardware_info.static_info.motherboard_name) - 1)] = '\0';
+	(*source).hardware_info.static_info.motherboard_name[(sizeof((*source).hardware_info.static_info.motherboard_label) - 1)] = '\0';
 	RegCloseKey(key);
 }
 
@@ -235,8 +240,9 @@ void get_total_memory_mb(device_info_t *source)
 {
 	MEMORYSTATUSEX memory_info; 
 	memory_info.dwLength = sizeof(MEMORYSTATUSEX);
-	GlobalMemoryStatusEx(&memory_info);
-	(*source).hardware_info.static_info.memory_capacity_max_mb = (memory_info.ullTotalPhys / (1024ULL * 1204ULL));
+	if (GlobalMemoryStatusEx(&memory_info) == FALSE)
+		return ;
+	(*source).hardware_info.static_info.memory_capacity_max_mb = (memory_info.ullTotalPhys / (1024ULL * 1024ULL));
 }
 
 void test_func(device_info_t device_info)
@@ -273,10 +279,6 @@ int main( void )
 	device_info_t device_info;
 	char path[36];
 	get_pc_name(&device_info);
-	MEMORYSTATUSEX test; 
-	test.dwLength = sizeof(MEMORYSTATUSEX);
-	GlobalMemoryStatusEx(&test);
-	printf("%llu\n", (test.ullTotalPhys / (1024ULL * 1024ULL)));
 	get_cpu_name(&device_info);
 	get_volume_names(&device_info);
 	get_mother_board_static_value(&device_info);
