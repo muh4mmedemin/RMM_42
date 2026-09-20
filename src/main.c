@@ -57,7 +57,8 @@ void get_dynamic_memory(device_info_t *source)
 	mem_st.dwLength = sizeof(mem_st);
 	if(GlobalMemoryStatusEx(&mem_st) == FALSE)
 		return ;
-	(*source).hardware_info.dynamic_info.memory_usage_mb = mem_st.dwMemoryLoad;
+	(*source).hardware_info.dynamic_info.memory_usage_percent = mem_st.dwMemoryLoad;
+	(*source).hardware_info.dynamic_info.memory_usage_mb = mem_st.ullAvailPhys;
 }
 #include "psapi.h"
 int main( void )
@@ -80,7 +81,8 @@ int main( void )
 	while(1)
 	{
 		get_dynamic_memory(&device_info);
-		printf("MEMORY USAGE %llu%%\n", device_info.hardware_info.dynamic_info.memory_usage_mb);
+		printf("MEMORY USAGE %d%%\n", device_info.hardware_info.dynamic_info.memory_usage_percent);
+		printf("MEMORY USAGE %llu/%llu Mb\n",  device_info.hardware_info.static_info.memory_capacity_max_mb - ((device_info.hardware_info.dynamic_info.memory_usage_mb) / (1024ULL * 1024ULL)), device_info.hardware_info.static_info.memory_capacity_max_mb);
 		usleep(5000000);
 	}
 }
