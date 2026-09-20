@@ -245,6 +245,33 @@ void get_total_memory_mb(device_info_t *source)
 	(*source).hardware_info.static_info.memory_capacity_max_mb = (memory_info.ullTotalPhys / (1024ULL * 1024ULL));
 }
 
+void get_dns_name(device_info_t *source)
+{
+	char info[64];
+	DWORD info_size;
+	info_size = sizeof(info);
+	if (GetComputerNameExA(ComputerNameDnsDomain, info, &info_size) == FALSE)
+		return ;
+	if(strlen(info) > 0)
+		(*source).user_info.static_info.is_domain_joined = 1;
+	else
+		(*source).user_info.static_info.is_domain_joined = 0;
+	strncpy((*source).user_info.static_info.domain_or_workgroup_name, info, (sizeof((*source).user_info.static_info.domain_or_workgroup_name) - 1));
+}
+
+void get_time_zone(device_info_t *source)
+{
+	TIME_ZONE_INFORMATION timezone_info;
+	char info[64];
+	char conv[64];
+
+	ZeroMemory(&timezone_info, sizeof(timezone_info));
+	GetTimeZoneInformation(&timezone_info);
+	wcstombs(info, timezone_info.StandardName, sizeof(info));
+	CharToOem(info, conv);
+	strncpy((*source).user_info.static_info.timezone_name, conv, (sizeof((*source).user_info.static_info.timezone_name) - 1));
+}
+
 void test_func(device_info_t device_info)
 {
 	int i;
@@ -272,6 +299,8 @@ void test_func(device_info_t device_info)
 		printf("VOLUME : %s\nVOLUME TOTAL SPACE : %llu\nVOLUME USED SPACE : %llu\nVOLUME FREE SPACE : %llu\n", device_info.hardware_info.static_info.volume_info.volumes[i].volume_letter, device_info.hardware_info.static_info.volume_info.volumes[i].total_mb, device_info.hardware_info.static_info.volume_info.volumes[i].used_mb, device_info.hardware_info.static_info.volume_info.volumes[i].free_mb);
 		i++;
 	}
+	printf("DNS IS JOINED %d\nDNS NAME : %s\n",device_info.user_info.static_info.is_domain_joined, device_info.user_info.static_info.domain_or_workgroup_name);
+	printf("USER TIME ZONE : %s\n", device_info.user_info.static_info.timezone_name);
 }
 
 int main( void )
@@ -288,6 +317,8 @@ int main( void )
 	get_os_name(&device_info);
 	get_cpu_arch(&device_info);
 	get_total_memory_mb(&device_info);
+	get_dns_name(&device_info);
+	get_time_zone(&device_info);
 	test_func(device_info);
 
 	//DeviceIoControl(test, fdwCreate, )

@@ -68,13 +68,20 @@ typedef struct	hardware_info_s {
 	hardware_static_info_t	static_info;
 }	hardware_info_t;
 
-typedef struct	user_static_info_s {
+typedef struct	user_dynamic_info_s {
 	char	current_user_name[64];
 	int		is_admin;
+} user_dynamic_info_t;
+
+typedef struct user_static_info_s {
+    char domain_or_workgroup_name[64];		// Done
+    int  is_domain_joined;		// Done
+    char timezone_name[64];		// Done
 } user_static_info_t;
 
 typedef struct	user_info_s {
-	user_static_info_t user_info;
+	user_static_info_t static_info;
+	user_dynamic_info_t user_info;
 } user_info_t;
 
 
