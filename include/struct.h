@@ -1,0 +1,95 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   struct.h                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: muayna <muayna@student.42istanbul.com.t    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/20 05:03:53 by muayna            #+#    #+#             */
+/*   Updated: 2026/09/20 05:03:53 by muayna           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef STRUCT_H
+#define STRUCT_H
+
+#define MAX_DISK_COUNT 44
+#define MAX_VOLUME_COUNT 26
+#include "stdlib.h"
+
+typedef struct	disk_info_s{
+	char	disk_name[128]; // Done
+	char	disk_vendor[128]; // Done
+	int		is_ssd;		// 1 = SSD | 0 = HDD
+	unsigned long long	total_mb; // Done
+	unsigned long long	total_volume_capacity_mb; // Done
+	unsigned long long	used_volume_capacity_mb; // Done
+	unsigned long long	free_volume_capacity_mb; // Done
+	unsigned long		volume_bitmap_list; // Done : :  https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getlogicaldrives it's same
+} disk_info_t;
+
+typedef	struct	disk_list_s{
+	disk_info_t disk_info[MAX_DISK_COUNT];
+	int	disk_count; // Gerçekte kaç disk bulundu
+} disk_list_t;
+
+typedef struct volume_info_s{
+	char	volume_letter[5];
+	unsigned long long	total_mb;
+	unsigned long long	used_mb;
+	unsigned long long	free_mb;
+} volume_info_t;
+
+typedef struct volume_list_s{
+	volume_info_t volumes[MAX_VOLUME_COUNT];
+	int volume_count;
+} volume_list_t;
+
+typedef struct	hardware_static_info_s{
+	char				pc_name[128]; //Done
+	char				motherboard_name[128]; //Done
+	char				motherboard_label[128]; //Done
+	//char				ram_name[128];
+	disk_list_t			storage_info; // Done
+	volume_list_t		volume_info; // Done
+	char				cpu_label_name[128];//Done
+	char				os_name[128]; // done
+	int					is_64bit; // Done
+	unsigned long long	memory_capacity_max_mb; // Done
+} hardware_static_info_t;
+
+typedef struct hardware_dynamic_info_s {
+	unsigned long long	memory_usage_mb;
+	unsigned long long	cpu_usage_percent;
+} hardware_dynamic_info_t;
+
+typedef struct	hardware_info_s {
+	hardware_dynamic_info_t	dynamic_info;
+	hardware_static_info_t	static_info;
+}	hardware_info_t;
+
+typedef struct	user_dynamic_info_s {
+	char	current_user_name[64];
+	int		is_admin;
+} user_dynamic_info_t;
+
+typedef struct user_static_info_s {
+    char domain_or_workgroup_name[64];		// Done
+    int  is_domain_joined;		// Done
+    char timezone_name[64];		// Done
+} user_static_info_t;
+
+typedef struct	user_info_s {
+	user_static_info_t static_info;
+	user_dynamic_info_t user_info;
+} user_info_t;
+
+
+typedef struct device_info_s {
+	hardware_info_t	hardware_info;
+	user_info_t		user_info;
+} device_info_t;
+
+
+
+#endif
