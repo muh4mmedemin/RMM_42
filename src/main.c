@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include "../include/struct.h"
 #include "../include/functions_windows.h"
+#include "unistd.h"
 
 // To ensure correct resolution of symbols, add Psapi.lib to TARGETLIBS
 // and compile with -DPSAPI_VERSION=1
@@ -49,6 +50,16 @@ void test_func(device_info_t device_info)
 	printf("USER TIME ZONE : %s\n", device_info.user_info.static_info.timezone_name);
 }
 
+void get_dynamic_memory(device_info_t *source)
+{
+	MEMORYSTATUSEX mem_st;
+	ZeroMemory(&mem_st, sizeof(mem_st));
+	mem_st.dwLength = sizeof(mem_st);
+	if(GlobalMemoryStatusEx(&mem_st) == FALSE)
+		return ;
+	(*source).hardware_info.dynamic_info.memory_usage_mb = mem_st.dwMemoryLoad;
+}
+#include "psapi.h"
 int main( void )
 {
 	device_info_t device_info;
@@ -65,4 +76,11 @@ int main( void )
 	get_dns_name(&device_info);
 	get_time_zone(&device_info);
 	test_func(device_info);
+
+	while(1)
+	{
+		get_dynamic_memory(&device_info);
+		printf("MEMORY USAGE %llu%%\n", device_info.hardware_info.dynamic_info.memory_usage_mb);
+		usleep(5000000);
+	}
 }
