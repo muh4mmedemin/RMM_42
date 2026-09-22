@@ -77,14 +77,15 @@ int main( void )
 	get_dns_name(&device_info);
 	get_time_zone(&device_info);
 	test_func(device_info);
-
 	while(1)
 	{
+		get_user_name(&device_info);
 		get_cpu_workload_percent(&device_info);
 		get_dynamic_memory(&device_info);
 		printf("MEMORY USAGE %d%%\n", device_info.hardware_info.dynamic_info.memory_usage_percent);
 		printf("MEMORY USAGE %llu/%llu Mb\n",  device_info.hardware_info.static_info.memory_capacity_max_mb - ((device_info.hardware_info.dynamic_info.memory_usage_mb) / (1024ULL * 1024ULL)), device_info.hardware_info.static_info.memory_capacity_max_mb);
 		printf("CPU : %.2f%%\n", device_info.hardware_info.dynamic_info.cpu_usage_percent);
+		printf("USERNAME : %s\n", device_info.user_info.dynamic_info.current_user_name);
 		Sleep(5000);
 	}
 }

@@ -318,3 +318,16 @@ void get_cpu_workload_percent(device_info_t *source)
 	cpu_workload = (1.0 - ((double)idlediff/(double)totaldif)) * 100.0;
 	(*source).hardware_info.dynamic_info.cpu_usage_percent = cpu_workload;
 }
+
+void get_user_name(device_info_t *source)
+{
+	char user_name[64];
+	DWORD username_size = sizeof(user_name);
+
+	if(GetUserNameA(user_name, &username_size) == FALSE)
+	{
+		strncpy((*source).user_info.dynamic_info.current_user_name, "error", (sizeof((*source).user_info.dynamic_info.current_user_name) - 1));
+		return ;
+	}
+	strncpy((*source).user_info.dynamic_info.current_user_name, user_name, (sizeof((*source).user_info.dynamic_info.current_user_name) - 1));
+}

@@ -82,7 +82,7 @@ typedef struct user_static_info_s {
 
 typedef struct	user_info_s {
 	user_static_info_t static_info;
-	user_dynamic_info_t user_info;
+	user_dynamic_info_t dynamic_info;
 } user_info_t;
 
 
