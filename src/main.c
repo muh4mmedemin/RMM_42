@@ -80,9 +80,11 @@ int main( void )
 
 	while(1)
 	{
+		get_cpu_workload_percent(&device_info);
 		get_dynamic_memory(&device_info);
 		printf("MEMORY USAGE %d%%\n", device_info.hardware_info.dynamic_info.memory_usage_percent);
 		printf("MEMORY USAGE %llu/%llu Mb\n",  device_info.hardware_info.static_info.memory_capacity_max_mb - ((device_info.hardware_info.dynamic_info.memory_usage_mb) / (1024ULL * 1024ULL)), device_info.hardware_info.static_info.memory_capacity_max_mb);
-		usleep(5000000);
+		printf("CPU : %.2f%%\n", device_info.hardware_info.dynamic_info.cpu_usage_percent);
+		Sleep(5000);
 	}
 }

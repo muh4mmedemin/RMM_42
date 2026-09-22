@@ -259,3 +259,62 @@ void get_time_zone(device_info_t *source)
 	CharToOem(info, conv);
 	strncpy((*source).user_info.static_info.timezone_name, conv, (sizeof((*source).user_info.static_info.timezone_name) - 1));
 }
+
+void get_cpu_workload_percent(device_info_t *source)
+{
+	FILETIME idle1;
+	FILETIME kernel1;
+	FILETIME user1;
+
+	FILETIME idle2;
+	FILETIME kernel2;
+	FILETIME user2;
+
+	ULONGLONG idlediff;
+	ULONGLONG userdif;
+	ULONGLONG kerneldif;
+
+	ULONGLONG totaldif;
+
+	ULARGE_INTEGER u_idle1;
+	ULARGE_INTEGER u_idle2;
+	ULARGE_INTEGER u_kernel1;
+	ULARGE_INTEGER u_kernel2;
+	ULARGE_INTEGER u_user1;
+	ULARGE_INTEGER u_user2;
+
+	double cpu_workload;
+
+	if (GetSystemTimes(&idle1, &kernel1, &user1) == FALSE)
+	{
+		(*source).hardware_info.dynamic_info.cpu_usage_percent = -1.00;
+		return ;
+	}
+	Sleep(1000);
+	if (GetSystemTimes(&idle2, &kernel2, &user2) == FALSE)
+	{
+		(*source).hardware_info.dynamic_info.cpu_usage_percent = -1.00;
+		return ;
+	}
+	u_idle1.HighPart = idle1.dwHighDateTime;
+	u_idle1.LowPart = idle1.dwLowDateTime;
+	u_user1.HighPart = user1.dwHighDateTime;
+	u_user1.LowPart = user1.dwLowDateTime;
+	u_kernel1.HighPart = kernel1.dwHighDateTime;
+	u_kernel1.LowPart = kernel1.dwLowDateTime;
+
+	u_idle2.HighPart = idle2.dwHighDateTime;
+	u_idle2.LowPart = idle2.dwLowDateTime;
+	u_kernel2.HighPart = kernel2.dwHighDateTime;
+	u_kernel2.LowPart = kernel2.dwLowDateTime;
+	u_user2.HighPart = user2.dwHighDateTime;
+	u_user2.LowPart = user2.dwLowDateTime;
+
+	idlediff = u_idle2.QuadPart - u_idle1.QuadPart;
+	userdif = u_user2.QuadPart - u_user1.QuadPart;
+	kerneldif = u_kernel2.QuadPart - u_kernel1.QuadPart;
+
+	totaldif = kerneldif + userdif;
+	cpu_workload = (1.0 - ((double)idlediff/(double)totaldif)) * 100.0;
+	(*source).hardware_info.dynamic_info.cpu_usage_percent = cpu_workload;
+}

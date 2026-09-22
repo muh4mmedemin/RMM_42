@@ -61,7 +61,7 @@ typedef struct	hardware_static_info_s{
 typedef struct hardware_dynamic_info_s {
 	int					memory_usage_percent; // Done
 	unsigned long long	memory_usage_mb; // Done
-	unsigned long long	cpu_usage_percent;
+	double				cpu_usage_percent; // Done
 } hardware_dynamic_info_t;
 
 typedef struct	hardware_info_s {

@@ -26,5 +26,6 @@ void get_cpu_arch(device_info_t *source);
 void get_total_memory_mb(device_info_t *source);
 void get_dns_name(device_info_t *source);
 void get_time_zone(device_info_t *source);
+void get_cpu_workload_percent(device_info_t *source);
 
 #endif
