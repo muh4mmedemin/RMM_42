@@ -85,6 +85,22 @@ typedef struct	user_info_s {
 	user_dynamic_info_t dynamic_info;
 } user_info_t;
 
+typedef struct	network_static_info_s {
+
+	char	mac_address[18];
+	char	adapter_name;
+} network_static_info_t;
+
+typedef struct	network_dynamic_info_s {
+
+	int		ip_address;
+} network_dynamic_info_t;
+
+typedef struct	network_info_s {
+	network_static_info_t static_info;
+	network_static_info_t dynamic_info;
+} network_info_t;
+
 
 typedef struct device_info_s {
 	hardware_info_t	hardware_info;
